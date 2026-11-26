@@ -11,53 +11,52 @@ const usage = `Usage: simlock existing-ios register <UDID>
        simlock existing-ios unregister <UDID>
 `;
 
+const request = z.union([
+  z.tuple([z.literal("list")]),
+  z.tuple([z.literal("lease"), z.string().optional()]),
+  z.tuple([z.literal("register"), z.uuid()]),
+  z.tuple([z.literal("unregister"), z.uuid()]),
+  z.tuple([z.literal("release"), z.uuid()]),
+]);
+
 export async function run(
   argv: readonly string[],
   { environment, url, daemonFlag }: CommandContext,
 ) {
-  const [operation, value, ...extra] = argv;
-  if (operation === undefined || operation === "--help" || operation === "-h") {
+  if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
     environment.stdout.write(usage);
     return 0;
   }
   if (url !== undefined || daemonFlag === "gateway" || process.platform !== "darwin") {
     throw new UsageError("existing-ios runs locally on macOS.");
   }
-  const ids = z.uuid();
-  const hasId = operation === "register" || operation === "unregister" || operation === "release";
-  const parsed = ids.safeParse(value);
-  if (
-    extra.length > 0 ||
-    (hasId && !parsed.success) ||
-    (operation === "list" && value !== undefined) ||
-    (!hasId && operation !== "lease" && operation !== "list")
-  ) {
-    throw new UsageError(usage.trimEnd());
-  }
+  const parsed = request.safeParse(argv);
+  if (!parsed.success) throw new UsageError(usage.trimEnd());
 
   const registry = await existingIosRegistry(userInfo().homedir);
   try {
-    if (operation === "list") {
-      environment.stdout.write(JSON.stringify(registry.list()) + "\n");
-    } else if (operation === "lease") {
-      environment.stdout.write(JSON.stringify(await registry.lease(value ?? "")) + "\n");
-    } else if (parsed.success) {
-      switch (operation) {
-        case "register":
-          environment.stdout.write(
-            JSON.stringify(await registry.register(parsed.data.toUpperCase())) + "\n",
-          );
-          break;
-        case "unregister":
-          registry.unregister(parsed.data.toUpperCase());
-          break;
-        case "release":
-          registry.release(parsed.data.toLowerCase());
-          break;
-      }
-    }
+    const result = await execute(registry, parsed.data);
+    if (result !== undefined) environment.stdout.write(JSON.stringify(result) + "\n");
     return 0;
   } finally {
     registry.close();
+  }
+}
+
+async function execute(
+  registry: Awaited<ReturnType<typeof existingIosRegistry>>,
+  [operation, value]: z.infer<typeof request>,
+) {
+  switch (operation) {
+    case "list":
+      return registry.list();
+    case "lease":
+      return registry.lease(value ?? "");
+    case "register":
+      return registry.register(value.toUpperCase());
+    case "unregister":
+      return registry.unregister(value.toUpperCase());
+    case "release":
+      return registry.release(value.toLowerCase());
   }
 }
