@@ -37,6 +37,8 @@ Commands:
   baseline list [--json]      List the baselines on this worker
   baseline remove <name> [--yes]
                               Delete a baseline nobody uses
+  existing-ios <register|list|lease|release|unregister>
+                              Lease existing simulators locally without resetting them
   device add --platform <ios|android> <id> [--json]
                               Enrol a physical device plugged into this host
   device remove <id> [--json] Forget an enrolled physical device; the device is untouched

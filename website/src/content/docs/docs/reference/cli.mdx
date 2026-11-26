@@ -778,6 +778,32 @@ Removed baseline login v1.
 
 When idle devices were made from it, the line ends with ` Deleted 2 idle devices made from it.` An unknown name is `UNKNOWN_BASELINE`; a baseline a lease uses is refused with `BASELINE_IN_USE` and nothing is deleted. A copy that is being cleaned up or held by another operation is refused with `DEVICE_BUSY`; run the command again once it ends. With `--worker wrk_a` the prompt and the line end in ` from wrk_a`.
 
+## simlock existing-ios
+
+On macOS, lease a user-owned simulator from Xcode's default device set. Register
+each permitted simulator by UDID. The lease is exclusive across invocations
+under the same macOS account and survives the CLI exiting. Use the returned UDID
+with `xcrun simctl` or NeoSimulator.
+
+```sh
+simlock existing-ios register "$udid"
+simlock existing-ios list
+simlock existing-ios lease "iPhone Duo "
+simlock existing-ios release "$lease_id"
+simlock existing-ios unregister "$udid"
+```
+
+Register, list, and lease return JSON. Lease returns `udid`, `name`, and
+`leaseId`. It selects the first free matching name and reports an error if none
+is free. Release the lease after all operations are done. Leases have no
+automatic expiry, so a crashed caller's lease remains held until you release
+it explicitly. Unregister refuses to remove a leased entry.
+
+Use the `existing-ios` commands to coordinate every user of this pool. The
+local registry is independent of the daemon and is unavailable through the
+gateway. Release and unregister leave the simulator, its apps, and their data
+intact.
+
 ## simlock device
 
 Enrol a physical device plugged into this machine, or forget one. Needs the admin role. See [Enrol a phone](/simlock/docs/worker/enrol-phones).
