@@ -57,6 +57,7 @@ worker daemon ── uplink (WebSocket to /v1/uplink, worker dials) ──┘
 | lease-files | Core worker feature: a lease's files uploaded over HTTP to a folder under the data directory, served back with ranges, and removed when the lease ends | [lease-files](../../src/lease-files/AGENTS.md) |
 | auth | Credential → identity: tokens, admin secret, `hello`, uplink join token, HTTP strategies | [auth](../../src/auth/AGENTS.md) |
 | http | HTTP frontend: routes, SSE | [http](../../src/http/AGENTS.md) |
+| existing-ios | Local leases for user-owned iOS simulators | [existing-ios](../../src/existing-ios/AGENTS.md) |
 | cli | Operator command surface | [cli](../../src/cli/AGENTS.md) |
 | mcp | stdio MCP server for one agent session | [mcp](../../src/mcp/AGENTS.md) |
 | simlock-client, client, admin | The typed programmatic client (`simlock/client`, `simlock/admin`) | [simlock-client](../../src/simlock-client/AGENTS.md) · [client](../../src/client/AGENTS.md) · [admin](../../src/admin/AGENTS.md) |

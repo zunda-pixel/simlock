@@ -65,6 +65,7 @@ const filesModule = () => import("./commands/files.js");
 const warmModule = () => import("./commands/warm.js");
 
 export const COMMANDS: readonly CommandNode[] = [
+  { name: "existing-ios", load: () => import("./commands/existing-ios.js") },
   { name: "lease", load: leaseModule, children: [{ name: "renew", load: leaseModule }] },
   { name: "release", load: () => import("./commands/release.js") },
   { name: "status", load: () => import("./commands/status.js") },
